@@ -1,13 +1,14 @@
-from tkinter import dialog
-
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget , QVBoxLayout , QLabel , QHBoxLayout , QPushButton , QLineEdit , QComboBox
-from add_case import pop_up
+from PySide6.QtCore import Signal
+
+from case_management_tracker.database import get_stats
+from database import get_cases
 
 
 
 class controls(QWidget):
-    def __init__(self):
+    add_clicked = Signal()
+    def __init__(self, conn):
         super().__init__()
         self.setObjectName('controls')
         self.setStyleSheet('#controls {background-color:black;}')
@@ -30,39 +31,22 @@ class controls(QWidget):
         QPushButton:hover {background-color:#1f5fad;}''')
         self.first_layout.addWidget(self.add_bottom)
 
+        #getting the status value
+        self.total , self.open_case, self.closed = get_stats(conn)
 
         #stat card
         self.stats_layout = QHBoxLayout()
         self.control_main.addLayout(self.stats_layout)
-        self.total_case = self.create_stats('Total Case','0','#f5f5f5' )
-        self.open_case = self.create_stats('Open case', '0','#db9300')
-        self.close_case = self.create_stats('Close case', '0','#0ca30c')
+        self.total_case = self.create_stats('Total Case',str(self.total),'#f5f5f5' )
+        self.open_case = self.create_stats('Open case', str(self.open_case),'#db9300')
+        self.close_case = self.create_stats('Close case', str(self.closed),'#0ca30c')
 
         self.stats_layout.addWidget(self.total_case)
         self.stats_layout.addWidget(self.open_case)
         self.stats_layout.addWidget(self.close_case)
 
 
-        #now search bar and All statuses
-        self.search_layout = QHBoxLayout()
-        self.control_main.addLayout(self.search_layout)
-        self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText('🔍︎ Search By client or title ')
-        self.search_layout.addWidget(self.search_bar)
-        self.search_bar.setStyleSheet('color:white; placeholder-text-color:#aaaaaa; background-color:#1a1a19;')
-        self.control_main.addStretch()
-
-        #not all status
-        self.status = QComboBox()
-        self.status.addItems(['All status', 'Open', 'Closed'])
-        self.status.setStyleSheet('background-color:#2a78d6;')
-        self.search_layout.addWidget(self.status)
-
-        self.add_bottom.clicked.connect(self.open_dialog)
-
-    def open_dialog(self):
-        dialog = pop_up()
-        dialog.exec()
+        self.add_bottom.clicked.connect(self.add_clicked.emit)
 
 
     def create_stats(self, title_text, value_text, color):
@@ -78,6 +62,7 @@ class controls(QWidget):
         box_layout.addWidget(title)
         box_layout.addWidget(value)
         return box
+
 
 
 
