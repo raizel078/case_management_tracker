@@ -41,7 +41,6 @@ class all_cases_table(QWidget):
         self.table.setModel(self.model)
 
         # now search bar and All statuses
-        # CHANGED: build the search row, then add it into table_layout ABOVE the table
         self.search_layout = QHBoxLayout()
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText('\U0001F50D\uFE0E Search By client or title ')
@@ -55,6 +54,11 @@ class all_cases_table(QWidget):
         # ADDED: search row into the main layout (search above, table below)
         self.table_layout.addLayout(self.search_layout)
 
+        self.status.currentTextChanged.connect(self.refresh_table)
+        self.search_bar.textChanged.connect(self.refresh_table)
+
+
+
         # ADDED: table goes in after the search row
         self.table_layout.addWidget(self.table)
 
@@ -65,4 +69,13 @@ class all_cases_table(QWidget):
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+
+    def refresh_table(self, *args):
+        status = self.status.currentText()
+        search = self.search_bar.text()
+        self.data = get_cases(self.conn, status, search)
+        self.model = case_model(self.data)
+        self.table.setModel(self.model)
+
+
 

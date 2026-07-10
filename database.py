@@ -43,16 +43,30 @@ def add_case(conn, client, title, status, date):
 
     conn.commit()
 
-
-def get_cases(conn):
+def get_cases(conn, status='All status', search=''):
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT cases.id, client.client, cases.title, cases.status , 0
+    query = '''
+        SELECT cases.id, client.client, cases.title, cases.status, 0
         FROM cases
         JOIN client ON cases.client_id = client.id
-    ''')
-    return cursor.fetchall()
+    '''
+    conditions = []
+    params = []
 
+    if status != 'All status':
+        conditions.append('cases.status = ?')
+        params.append(status)
+
+    if search:
+        conditions.append('(cases.title LIKE ? OR client.client LIKE ?)')
+        params.append('%' + search + '%')
+        params.append('%' + search + '%')
+
+    if conditions:
+        query += ' WHERE ' + ' AND '.join(conditions)
+
+    cursor.execute(query, params)
+    return cursor.fetchall()
 
 def get_stats(conn):
     cursor = conn.cursor()

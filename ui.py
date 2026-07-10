@@ -32,6 +32,8 @@ class MainWidget(QWidget):
     def open_dialog(self):
         dialog = pop_up(self.conn)
         dialog.exec()
+        self.control_widget.refresh_stats()
+        self.case_table.refresh_table()
 
 
 
