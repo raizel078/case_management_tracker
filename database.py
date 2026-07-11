@@ -1,6 +1,5 @@
 import sqlite3
 
-
 def create_connection():
     conn = sqlite3.connect('cases.db')
     return conn
@@ -22,6 +21,13 @@ def create_table(conn):
           date TEXT,
           FOREIGN KEY (client_id) REFERENCES client(id)
           )''')
+    cursor.execute('''
+          CREATE TABLE IF NOT EXISTS updates(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          case_id INTEGER,
+          note TEXT,
+          date TEXT,
+          FOREIGN KEY (case_id) REFERENCES cases(id))''')
     conn.commit()
 
 
@@ -77,5 +83,18 @@ def get_stats(conn):
     cursor.execute("SELECT COUNT(*) FROM cases WHERE status = 'Closed'")
     closed = cursor.fetchone()[0]
     return total, open_count, closed
+
+# new
+def get_updates(conn, case_id):
+    cursor = conn.cursor()
+    cursor.execute('''
+    SELECT id, note, date FROM updates WHERE case_id=? ORDER BY id DESC''',(case_id,))
+    return cursor.fetchall()
+
+def add_update(conn, case_id, note, date):
+    cursor = conn.cursor()
+    cursor.execute('''
+    INSERT INTO updates (case_id, note, date) VALUES (?,?,?)''',(case_id, note, date))
+    conn.commit()
 
 

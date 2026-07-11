@@ -1,7 +1,6 @@
 from PySide6.QtWidgets import QWidget , QVBoxLayout , QLabel , QHBoxLayout , QPushButton , QLineEdit , QComboBox
 from PySide6.QtCore import Signal
-from case_management_tracker.database import get_stats
-from database import get_cases
+from database import get_stats, get_cases
 
 
 

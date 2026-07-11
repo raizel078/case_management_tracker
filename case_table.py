@@ -1,5 +1,6 @@
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableView, QHeaderView, QHBoxLayout, QLineEdit, QComboBox
-from PySide6.QtCore import QAbstractTableModel, Qt
+from PySide6.QtCore import QAbstractTableModel, Qt, Signal
 from database import get_cases
 
 
@@ -19,6 +20,13 @@ class case_model(QAbstractTableModel):
             row = index.row()
             col = index.column()
             return self.rows[row][col]
+        if role ==Qt.ItemDataRole.ForegroundRole:
+            if index.column() ==3:
+                status = self.rows[index.row()][3]
+                if status =='Open':
+                    return QColor('#db9300')
+                else:
+                    return QColor('#0ca30c')
         return None
 
     def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
@@ -30,6 +38,7 @@ class case_model(QAbstractTableModel):
 
 
 class all_cases_table(QWidget):
+    case_selected = Signal(list)
     def __init__(self, conn):
         super().__init__()
         self.conn = conn
@@ -69,6 +78,16 @@ class all_cases_table(QWidget):
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+
+        #now table row selected to open the update view.
+        self.table.doubleClicked.connect(self.row_clicked)
+
+    def row_clicked(self,index):
+        row = index.row()
+        row_data = self.model.rows[row]
+        self.case_selected.emit(row_data)
+
+
 
     def refresh_table(self, *args):
         status = self.status.currentText()
